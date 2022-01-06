@@ -3,9 +3,14 @@ allprojects {
     version = "2022.01.26-SNAPSHOT"
 
     extra.apply {
+        set("springDependencyManagement", "1.0.11.RELEASE")
         set("rsocketVersion", "1.1.1")
-        set("junit-jupiter", "5.8.2")
+        set("junitJupiter", "5.8.2")
     }
+}
+
+plugins {
+    id("org.springframework.boot") version "2.6.2" apply false
 }
 
 description = "RPC Framework base on RSocket application protocol."
@@ -27,7 +32,6 @@ subprojects {
     }
 
     tasks.withType<JavaCompile> {
-
         options.encoding = "UTF-8"
     }
 

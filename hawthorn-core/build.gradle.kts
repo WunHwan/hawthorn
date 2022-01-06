@@ -1,6 +1,10 @@
 dependencies {
-    implementation("io.rsocket:rsocket-core:${rootProject.extra["rsocketVersion"]}")
+    val rsocketVersion: String by rootProject.extra
+    val junitJupiter:String by rootProject.extra
 
-    testImplementation("org.junit.jupiter:junit-jupiter-api:${rootProject.extra["junit-jupiter"]}")
-    testImplementation("org.junit.jupiter:junit-jupiter-engine:${rootProject.extra["junit-jupiter"]}")
+    implementation("org.springframework:spring-context")
+    implementation("io.rsocket:rsocket-core:$rsocketVersion")
+
+    testImplementation("org.junit.jupiter:junit-jupiter-api:$junitJupiter")
+    testImplementation("org.junit.jupiter:junit-jupiter-engine:$junitJupiter")
 }
