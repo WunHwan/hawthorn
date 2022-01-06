@@ -1,22 +1,27 @@
+description = "RPC Framework base on RSocket application protocol."
+
+plugins {
+    id("org.springframework.boot") version "2.6.2" apply false
+    id("io.spring.dependency-management") version "1.0.11.RELEASE" apply false
+}
+
 allprojects {
     group = "com.wunhwan"
     version = "2022.01.26-SNAPSHOT"
 
     extra.apply {
-        set("springDependencyManagement", "1.0.11.RELEASE")
-        set("rsocketVersion", "1.1.1")
-        set("junitJupiter", "5.8.2")
+
     }
 }
 
-plugins {
-    id("org.springframework.boot") version "2.6.2" apply false
-}
-
-description = "RPC Framework base on RSocket application protocol."
-
 subprojects {
     apply(plugin = "java-library")
+    apply(plugin = "io.spring.dependency-management")
+
+    configure<JavaPluginExtension> {
+        sourceCompatibility = JavaVersion.VERSION_11
+        targetCompatibility = JavaVersion.VERSION_11
+    }
 
     repositories {
         mavenLocal()
@@ -26,9 +31,19 @@ subprojects {
         mavenCentral()
     }
 
-    configure<JavaPluginExtension> {
-        sourceCompatibility = JavaVersion.VERSION_11
-        targetCompatibility = JavaVersion.VERSION_11
+    configure<io.spring.gradle.dependencymanagement.dsl.DependencyManagementExtension> {
+        imports(delegateClosureOf<io.spring.gradle.dependencymanagement.dsl.ImportsHandler> {
+            mavenBom(org.springframework.boot.gradle.plugin.SpringBootPlugin.BOM_COORDINATES)
+        })
+    }
+
+    // fix；slf4j
+    configurations.all {
+        resolutionStrategy.eachDependency {
+            if (requested.group == "org.slf4j") {
+                useVersion("1.7.20")
+            }
+        }
     }
 
     tasks.withType<JavaCompile> {
