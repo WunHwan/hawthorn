@@ -1,0 +1,6 @@
+package com.wunhwan.hawthorn.core.metadata;/**
+ * todo...
+ * @author WunHwan
+ * @since todo...
+ */public class MethodMetadata {
+}

@@ -1,0 +1,6 @@
+package com.wunhwan.hawthorn.core.annotation;/**
+ * todo...
+ * @author WunHwan
+ * @since todo...
+ */public interface MethodMapping {
+}
