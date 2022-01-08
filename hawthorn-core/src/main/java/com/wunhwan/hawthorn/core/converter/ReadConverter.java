@@ -6,14 +6,14 @@ import java.util.Objects;
 /**
  * todo...
  *
- * @author WunHwan
- * @since todo...
+ * @author wunhwantseng@gmail.com
+ * @since 2022.01.26
  */
-public interface ToObjectConverter<T> {
+public interface ReadConverter<T> {
 
     T convert(byte[] bytes);
 
-    static String byteToString(byte[] bytes) {
+    static String inputToString(byte[] bytes) {
         Objects.requireNonNull(bytes);
 
         return new String(bytes, StandardCharsets.UTF_8);

@@ -1,6 +1,15 @@
-package com.wunhwan.hawthorn.core.metadata;/**
+package com.wunhwan.hawthorn.core.metadata;
+
+/**
  * todo...
- * @author WunHwan
+ *
+ * @author wunhwantseng@gmail.com
  * @since todo...
- */public class MethodMetadata {
+ */
+public class MethodMetadata {
+
+    private Class<?>[] parameterClass;
+
+    private Class<?> returnClass;
+
 }

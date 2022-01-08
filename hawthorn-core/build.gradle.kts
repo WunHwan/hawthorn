@@ -1,5 +1,4 @@
 dependencies {
-    implementation("org.springframework:spring-context")
     implementation("io.rsocket:rsocket-core")
 
     testImplementation("org.junit.jupiter:junit-jupiter-api")

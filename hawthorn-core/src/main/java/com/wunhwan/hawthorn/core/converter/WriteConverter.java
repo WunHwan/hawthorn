@@ -6,14 +6,14 @@ import java.util.Objects;
 /**
  * todo...
  *
- * @author WunHwan
+ * @author wunhwantseng@gmail.com
  * @since todo...
  */
-public interface ToByteConverter<T> {
+public interface WriteConverter<T> {
 
     byte[] convert(T source);
 
-    default byte[] stringToByte(String source) {
+    default byte[] outputToByte(String source) {
         Objects.requireNonNull(source);
 
         return source.getBytes(StandardCharsets.UTF_8);

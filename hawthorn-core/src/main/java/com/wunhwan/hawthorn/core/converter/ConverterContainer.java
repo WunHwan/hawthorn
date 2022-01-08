@@ -1,6 +1,7 @@
 package com.wunhwan.hawthorn.core.converter;
 
 import java.util.Collection;
+import java.util.Map;
 
 /**
  * todo...
@@ -10,10 +11,12 @@ import java.util.Collection;
  */
 public interface ConverterContainer {
 
-    void inputTypeConverterRegister(Collection<InputTypeConverter<?>> inputTypeConverters);
+    void inputTypeConverterRegister(Collection<ReadConverter<?>> inputTypeConverters);
 
-    void outputTypeConverterRegister(Collection<OutputTypeConverter<?>> outputTypeConverters);
+    void outputTypeConverterRegister(Collection<WriteConverter<?>> outputTypeConverters);
 
+    Map<Class<?>, ReadConverter<?>> getReadOnlyInputTypeConverter();
 
+    Map<Class<?>, WriteConverter<?>> getReadOnlyOutputTypeConverters();
 
 }
