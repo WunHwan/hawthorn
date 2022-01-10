@@ -1,10 +1,8 @@
 package com.wunhwan.hawthorn.core.metadata;
 
-import com.wunhwan.hawthorn.core.converter.ConverterContainer;
-
 import java.lang.reflect.Method;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.Collection;
+import java.util.Optional;
 
 /**
  * todo...
@@ -12,12 +10,18 @@ import java.util.Map;
  * @author wunhwantseng@gmail.com
  * @since todo...
  */
-public class TargetMetadata {
+public interface TargetMetadata {
 
-    private Class<?> type;
+    Class<?> type();
 
-    private Map<Method, MethodMetadata> methodMethodMetadataMap = new HashMap<>();
+    String url();
 
-    private ConverterContainer converterContainer;
+    String protocol();
+
+    String agreementType();
+
+    void addMethodMetadata(Collection<MethodMetadata> collection);
+
+    Optional<MethodMetadata> getMetadata(Method method);
 
 }
