@@ -10,7 +10,7 @@ allprojects {
     version = "2022.01.26-SNAPSHOT"
 
     extra.apply {
-
+        set("eclipse-collections", "11.0.0")
     }
 }
 

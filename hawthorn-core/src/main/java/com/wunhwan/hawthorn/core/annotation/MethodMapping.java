@@ -15,6 +15,6 @@ public @interface MethodMapping {
 
     String route();
 
-    String protocol() default "json";
+    String protocol();
 
 }
