@@ -59,7 +59,7 @@ final class TargetProxy implements InvocationHandler {
     }
 
     private static Mono<Void> fireAndForget(RSocketClient socketClient, byte[] bytes) {
-        return socketClient.fireAndForget(bytes);
+        return socketClient.fireAndForget(null); // todo
     }
 
     private static boolean isReactive(Class<?> clazz) {

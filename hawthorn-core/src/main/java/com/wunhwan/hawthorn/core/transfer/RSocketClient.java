@@ -1,5 +1,6 @@
 package com.wunhwan.hawthorn.core.transfer;
 
+import io.rsocket.Payload;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
@@ -11,7 +12,7 @@ import reactor.core.publisher.Mono;
  **/
 public interface RSocketClient {
 
-    Mono<Void> fireAndForget(byte[] bytes);
+    Mono<Void> fireAndForget(Payload payload);
 
     <T> Mono<T> requestAndResponse(byte[] bytes, Class<T> returnType);
 
