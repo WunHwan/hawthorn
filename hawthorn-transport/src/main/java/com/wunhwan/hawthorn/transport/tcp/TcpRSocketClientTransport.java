@@ -1,8 +1,7 @@
-package com.wunhwan.hawthorn.transport.ws;
+package com.wunhwan.hawthorn.transport.tcp;
 
 import com.wunhwan.hawthorn.core.transfer.RSocketClientTransport;
 import io.rsocket.DuplexConnection;
-import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 /**
@@ -11,7 +10,7 @@ import reactor.core.publisher.Mono;
  * @author 开发-郑文焕
  * @since todo...
  **/
-public class WebsocketRSocketClientTransport implements RSocketClientTransport {
+public class TcpRSocketClientTransport implements RSocketClientTransport {
 
     @Override
     public Mono<DuplexConnection> connect() {
