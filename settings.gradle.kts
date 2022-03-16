@@ -9,3 +9,4 @@
 
 rootProject.name = "hawthorn"
 include("hawthorn-core")
+include("hawthorn-transport")

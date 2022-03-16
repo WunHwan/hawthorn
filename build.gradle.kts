@@ -10,7 +10,24 @@ allprojects {
     version = "2022.01.26-SNAPSHOT"
 
     extra.apply {
-        set("eclipse-collections", "11.0.0")
+        set("Version.rsocket", "1.1.1")
+        set("Version.eclipse-collections", "11.0.0")
+    }
+
+    extra.apply {
+        set("rsocket-core", "io.rsocket:rsocket-core:${extra.get("Version.rsocket")}")
+        set("rsocket-transport-netty", "io.rsocket:rsocket-transport-netty:${extra.get("Version.rsocket")}")
+        set(
+            "eclipse-collections",
+            "org.eclipse.collections:eclipse-collections:${extra.get("Version.eclipse-collections")}"
+        )
+        set(
+            "eclipse-collections-api",
+            "org.eclipse.collections:eclipse-collections-api:${extra.get("Version.eclipse-collections")}"
+        )
+
+        set("jupiter-api", "org.junit.jupiter:junit-jupiter-api")
+        set("jupiter-engine", "org.junit.jupiter:junit-jupiter-engine")
     }
 }
 
@@ -37,11 +54,16 @@ subprojects {
         })
     }
 
-    // fix；slf4j
     configurations.all {
-        resolutionStrategy.eachDependency {
-            if (requested.group == "org.slf4j") {
-                useVersion("1.7.20")
+        resolutionStrategy {
+            // make fail when dependency version conflict
+            failOnVersionConflict()
+
+            eachDependency {
+                // fix；slf4j
+                if (requested.group == "org.slf4j") {
+                    useVersion("1.7.20")
+                }
             }
         }
     }

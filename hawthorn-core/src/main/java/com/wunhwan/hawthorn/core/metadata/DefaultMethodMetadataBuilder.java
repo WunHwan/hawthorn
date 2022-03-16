@@ -2,6 +2,7 @@ package com.wunhwan.hawthorn.core.metadata;
 
 import java.lang.reflect.AnnotatedType;
 import java.lang.reflect.Method;
+import java.util.Arrays;
 import java.util.Objects;
 
 /**
@@ -58,6 +59,17 @@ final class DefaultMethodMetadataBuilder implements MethodMetadata.Builder {
             @Override
             public Class<?> returnClass() {
                 return method().getReturnType();
+            }
+
+            @Override
+            public String toString() {
+                return "MethodMetadata{" +
+                        "method='" + method() + '\'' +
+                        ", route='" + route() + '\'' +
+                        ", annotatedType='" + Arrays.toString(annotatedType()) + '\'' +
+                        ", parameterClass='" + Arrays.toString(parameterClass()) + '\'' +
+                        ", returnClass='" + returnClass() + '\'' +
+                        '}';
             }
         };
     }
