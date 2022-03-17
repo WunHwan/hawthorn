@@ -1,6 +1,12 @@
 package com.wunhwan.hawthorn.core.metadata;
 
+import com.wunhwan.hawthorn.core.annotation.RSocketService;
+
+import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * todo...
@@ -8,20 +14,69 @@ import java.util.List;
  * @author wunhwantseng@gmail.com
  * @since todo...
  */
-public interface ServiceMetadata {
+public class ServiceMetadata {
 
-    String serviceId();
+    private final Class<?> service;
+    private final RSocketService rootMapping;
+    private final Map<String, MethodMetadata> methodMetadataMap = new HashMap<>();
 
-    String version();
+    public ServiceMetadata(Class<?> service) {
+        this.service = service;
 
-    String group();
+        if (!service.isAnnotationPresent(RSocketService.class)) {
+            throw new IllegalArgumentException("class [" + service.getCanonicalName() + "] miss @RSocketService");
+        }
 
-    String endpoint();
+        this.rootMapping = service.getAnnotation(RSocketService.class);
 
-    RSocketMimeType dataEncodingType();
+        for (Method method : service.getDeclaredMethods()) {
+            if (Modifier.isNative(method.getModifiers())) {
+                continue;
+            }
+            if (!Modifier.isPublic(method.getModifiers())) {
+                continue;
+            }
 
-    RSocketMimeType acceptEncodingType();
+            final MethodMetadata methodMetadata = new MethodMetadata(method);
+            String methodEndpoint = methodMetadata.endpoint();
+            if (methodEndpoint == null) {
+                methodEndpoint = methodMetadata.method().getName();
+            }
+            methodMetadataMap.put(methodEndpoint, methodMetadata);
+        }
+    }
 
-    List<MethodMetadata> getAllMethodMetadata();
+    public String serviceId() {
+        final String serviceId = rootMapping.serviceId();
+        if (serviceId != null) {
+            return serviceId;
+        }
+
+        return service.getCanonicalName();
+    }
+
+    public String version() {
+        return rootMapping.version();
+    }
+
+    public String group() {
+        return rootMapping.group();
+    }
+
+    public String endpoint() {
+        return rootMapping.endpoint();
+    }
+
+    public RSocketMimeType dataEncodingType() {
+        return rootMapping.dataEncodingType();
+    }
+
+    public RSocketMimeType acceptEncodingType() {
+        return rootMapping.acceptEncodingType();
+    }
+
+    public List<MethodMetadata> getAllMethodMetadata() {
+        return List.copyOf(methodMetadataMap.values());
+    }
 
 }
