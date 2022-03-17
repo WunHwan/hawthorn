@@ -1,7 +1,9 @@
 package com.wunhwan.hawthorn.core.metadata;
 
-import java.lang.reflect.AnnotatedType;
+import io.rsocket.frame.FrameType;
+
 import java.lang.reflect.Method;
+import java.util.Optional;
 
 /**
  * todo...
@@ -13,25 +15,12 @@ public interface MethodMetadata {
 
     Method method();
 
-    String route();
+    String endpoint();
 
-    AnnotatedType[] annotatedType();
+    int paramCount();
 
-    Class<?>[] parameterClass();
+    Optional<FrameType> frameType();
 
-    Class<?> returnClass();
-
-    static MethodMetadata.Builder builder() {
-        return new DefaultMethodMetadataBuilder();
-    }
-
-    interface Builder {
-
-        MethodMetadata.Builder method(Method method);
-
-        MethodMetadata.Builder route(String route);
-
-        MethodMetadata build();
-    }
+    Class<?> returnType();
 
 }
