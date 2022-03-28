@@ -18,7 +18,7 @@ import java.util.Map;
 public class RSocketCompositeMetadata implements CompositeMetadata.Entry {
 
     private final Map<String, ByteBuf> metadata = new HashMap<>();
-    private  RoutingMetadata routingMetadata;
+    private RoutingMetadata routingMetadata;
 
     public static RSocketCompositeMetadata from(ByteBuf content) {
         RSocketCompositeMetadata compositeMetadata = new RSocketCompositeMetadata();
