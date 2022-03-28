@@ -11,7 +11,7 @@ import java.lang.annotation.*;
  * @since 2022.01.26
  */
 @Documented
-@Target(ElementType.METHOD)
+@Target(ElementType.TYPE)
 @Retention(RetentionPolicy.RUNTIME)
 public @interface RSocketService {
 
