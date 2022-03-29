@@ -45,7 +45,6 @@ public class RSocketCompositeMetadata implements CompositeMetadata.Entry {
         return this;
     }
 
-
     @Override
     public ByteBuf getContent() {
         final CompositeByteBuf compositeByteBuf = PooledByteBufAllocator.DEFAULT.compositeBuffer();

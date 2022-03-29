@@ -1,11 +1,11 @@
-package com.wunhwan.hawthorn.core.transfer;
+package com.wunhwan.hawthorn.core;
 
 import io.rsocket.transport.ClientTransport;
 
 /**
  * todo...
  *
- * @author 开发-郑文焕
+ * @author wunhwantseng@gmail.com
  * @since todo...
  **/
 public interface RSocketClientTransport extends ClientTransport {

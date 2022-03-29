@@ -1,12 +1,13 @@
-package com.wunhwan.hawthorn.core.rpc;
+package com.wunhwan.hawthorn.transport.rpc;
 
 import com.wunhwan.hawthorn.core.context.TargetContext;
 import com.wunhwan.hawthorn.core.metadata.MethodMetadata;
+import com.wunhwan.hawthorn.core.metadata.ServiceMetadata;
 import com.wunhwan.hawthorn.core.metadata.TargetMetadata;
 import com.wunhwan.hawthorn.core.protocol.ProtocolSerializable;
 import com.wunhwan.hawthorn.core.protocol.ProtocolSerializationFactory;
-import com.wunhwan.hawthorn.core.transfer.RSocketClient;
-import com.wunhwan.hawthorn.core.transfer.TargetDescribe;
+import com.wunhwan.hawthorn.transport.TargetDescribe;
+import io.rsocket.core.RSocketClient;
 import reactor.core.CorePublisher;
 import reactor.core.publisher.Mono;
 
@@ -24,10 +25,10 @@ import java.util.Optional;
 @SuppressWarnings({"all"})
 final class TargetProxy implements InvocationHandler {
 
-    private final TargetContext targetContext;
+    private final ServiceMetadata serviceMetadata;
 
-    TargetProxy(TargetContext targetContext) {
-        this.targetContext = targetContext;
+    public TargetProxy(ServiceMetadata serviceMetadata) {
+        this.serviceMetadata = serviceMetadata;
     }
 
     @Override
@@ -38,16 +39,15 @@ final class TargetProxy implements InvocationHandler {
             return method.invoke(this, args);
         }
 
-        final TargetMetadata targetMetadata = targetContext.targetMetadata();
-        Optional<MethodMetadata> existMetadata = targetMetadata.getMetadata(method);
-        if (existMetadata.isEmpty()) {
+        Optional<MethodMetadata> methodMetadataOpt = serviceMetadata.getMethodMetadata(method);
+        if (methodMetadataOpt.isEmpty()) {
             throw new IllegalArgumentException("can not found method:{ " + method.getName() + " } metadata");
         }
 
         // method metadata of proxy object
-        final MethodMetadata metadata = existMetadata.get();
+        final MethodMetadata methodMetadata = methodMetadataOpt.get();
         // rsokcet transfer package
-        TargetDescribe targetDescribe = new TargetDescribe(targetMetadata.protocol(), metadata.route(), Map.of());
+        TargetDescribe targetDescribe = new TargetDescribe(methodMetadata.hget(), metadata.route(), Map.of());
 
         final Optional<ProtocolSerializable> serializableOptional = ProtocolSerializationFactory.lookup(targetMetadata.protocol());
         if (serializableOptional.isEmpty()) {

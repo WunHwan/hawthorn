@@ -1,7 +1,5 @@
 package com.wunhwan.hawthorn.core.annotation;
 
-import com.wunhwan.hawthorn.core.metadata.RSocketMimeType;
-
 import java.lang.annotation.*;
 
 /**
@@ -23,8 +21,8 @@ public @interface RSocketService {
 
     String endpoint() default "";
 
-    RSocketMimeType dataEncodingType() default RSocketMimeType.JSON;
+    String dataEncoding() default "json";
 
-    RSocketMimeType acceptEncodingType() default RSocketMimeType.JSON;
+    String acceptEncoding() default "json";
 
 }

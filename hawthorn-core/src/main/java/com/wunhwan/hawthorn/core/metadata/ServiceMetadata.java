@@ -7,6 +7,7 @@ import java.lang.reflect.Modifier;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 /**
  * todo...
@@ -19,6 +20,7 @@ public class ServiceMetadata {
     private final Class<?> service;
     private final RSocketService rootMapping;
     private final Map<String, MethodMetadata> methodMetadataMap = new HashMap<>();
+    private TransferMetadata rootTransferMetadata;
 
     public ServiceMetadata(Class<?> service) {
         this.service = service;
@@ -67,16 +69,20 @@ public class ServiceMetadata {
         return rootMapping.endpoint();
     }
 
-    public RSocketMimeType dataEncodingType() {
-        return rootMapping.dataEncodingType();
+    public String dataEncoding() {
+        return rootMapping.dataEncoding();
     }
 
-    public RSocketMimeType acceptEncodingType() {
-        return rootMapping.acceptEncodingType();
+    public String acceptEncoding() {
+        return rootMapping.acceptEncoding();
     }
 
     public List<MethodMetadata> getAllMethodMetadata() {
         return List.copyOf(methodMetadataMap.values());
+    }
+
+    public Optional<MethodMetadata> getMethodMetadata(Method method) {
+        return Optional.ofNullable(methodMetadataMap.get(method));
     }
 
 }

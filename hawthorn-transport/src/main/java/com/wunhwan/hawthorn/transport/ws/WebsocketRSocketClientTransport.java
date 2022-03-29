@@ -1,6 +1,6 @@
 package com.wunhwan.hawthorn.transport.ws;
 
-import com.wunhwan.hawthorn.core.transfer.RSocketClientTransport;
+import com.wunhwan.hawthorn.core.RSocketClientTransport;
 import io.rsocket.DuplexConnection;
 import io.rsocket.transport.netty.client.WebsocketClientTransport;
 import reactor.core.publisher.Mono;
@@ -10,7 +10,7 @@ import java.net.URI;
 /**
  * todo...
  *
- * @author 开发-郑文焕
+ * @author wunhwantseng@gmail.com
  * @since todo...
  **/
 public class WebsocketRSocketClientTransport implements RSocketClientTransport {
