@@ -6,7 +6,6 @@ import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 import java.lang.reflect.Method;
-import java.util.Optional;
 
 /**
  * todo...
@@ -18,7 +17,7 @@ public class MethodMetadata {
 
     private final Method method;
 
-    private final String endpoint;
+    private final String route;
 
     private final int paramCount;
 
@@ -34,15 +33,17 @@ public class MethodMetadata {
         if (method.isAnnotationPresent(RSocketService.class)) {
             final RSocketService annotation = method.getAnnotation(RSocketService.class);
 
-            this.endpoint = annotation.endpoint();
+            this.route = annotation.endpoint();
         } else {
-            this.endpoint = null;
+            this.route = method.getName();
         }
 
         if (Mono.class.equals(returnType)) {
             this.frameType = FrameType.REQUEST_RESPONSE;
         } else if (Flux.class.equals(returnType)) {
             this.frameType = FrameType.REQUEST_CHANNEL;
+        } else if (Void.class.equals(returnType)) {
+            this.frameType = FrameType.REQUEST_FNF;
         } else {
             this.frameType = FrameType.REQUEST_RESPONSE;
         }
@@ -52,16 +53,16 @@ public class MethodMetadata {
         return this.method;
     }
 
-    public String endpoint() {
-        return this.endpoint;
+    public String route() {
+        return this.route;
     }
 
     public int paramCount() {
         return this.paramCount;
     }
 
-    public Optional<FrameType> frameType() {
-        return Optional.of(frameType);
+    public FrameType getFrameType() {
+        return frameType;
     }
 
     public Class<?> returnType() {

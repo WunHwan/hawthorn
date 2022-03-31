@@ -6,6 +6,7 @@ import io.rsocket.Payload;
 import io.rsocket.RSocket;
 import io.rsocket.core.RSocketConnector;
 import io.rsocket.frame.decoder.PayloadDecoder;
+import org.reactivestreams.Publisher;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
@@ -33,12 +34,14 @@ final class DefaultRSocketClient implements RSocketClient {
     }
 
     @Override
-    public <T> Mono<T> requestAndResponse(byte[] bytes, Class<T> returnType) {
-        return null;
+    public Mono<Payload> requestAndResponse(Payload payload) {
+        return Mono.defer(() -> connector)
+                .flatMap(rSocket -> rSocket.requestResponse(payload));
     }
 
     @Override
-    public <T> Flux<T> requestAndChannel(byte[] bytes, Class<T> returnType) {
-        return null;
+    public Flux<Payload> requestAndChannel(Publisher<Payload> payloads) {
+        return Mono.defer(() -> connector)
+                .flatMapMany(rSocket -> rSocket.requestChannel(payloads));
     }
 }

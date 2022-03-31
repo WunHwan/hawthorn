@@ -5,6 +5,9 @@ import com.wunhwan.hawthorn.core.metadata.MethodMetadata;
 import com.wunhwan.hawthorn.core.metadata.ServiceMetadata;
 import com.wunhwan.hawthorn.core.protocol.ProtocolSerializable;
 import com.wunhwan.hawthorn.core.protocol.ProtocolSerializationFactory;
+import io.rsocket.Payload;
+import io.rsocket.frame.FrameType;
+import io.rsocket.util.DefaultPayload;
 import org.apache.commons.lang3.StringUtils;
 import reactor.core.CorePublisher;
 import reactor.core.publisher.Mono;
@@ -21,12 +24,12 @@ import java.util.Optional;
  * @since todo...
  **/
 @SuppressWarnings({"all"})
-final class MethodProxy implements InvocationHandler {
+final class RSocketRequesterProxy implements InvocationHandler {
 
     private final ServiceMetadata serviceMetadata;
     private final RSocketClient socketClient;
 
-    public MethodProxy(ServiceMetadata serviceMetadata, RSocketClient socketClient) {
+    public RSocketRequesterProxy(ServiceMetadata serviceMetadata, RSocketClient socketClient) {
         this.serviceMetadata = serviceMetadata;
         this.socketClient = socketClient;
     }
@@ -47,9 +50,9 @@ final class MethodProxy implements InvocationHandler {
         // method metadata of proxy object
         final MethodMetadata methodMetadata = methodMetadataOpt.get();
         // transport route endpoint
-        final String routeEndpoint = splicRoute(serviceMetadata, methodMetadata);
+        final String routeing = splicRoute(serviceMetadata, methodMetadata);
         // rsokcet transfer package
-        TransportDescribe transportDescribe = new TransportDescribe(serviceMetadata.dataEncoding(), routeEndpoint, Map.of());
+        TransportDescribe transportDescribe = new TransportDescribe(serviceMetadata.getDataEncoding(), routeing, Map.of());
 
         final Optional<ProtocolSerializable> serializableOptional = ProtocolSerializationFactory.lookup(transportDescribe.getProtocol());
         if (serializableOptional.isEmpty()) {
@@ -57,17 +60,23 @@ final class MethodProxy implements InvocationHandler {
         }
         final ProtocolSerializable protocolSerializable = serializableOptional.get();
         final byte[] bytes = protocolSerializable.serialize(transportDescribe);
+        Payload payload = DefaultPayload.create(bytes);
 
-        final Mono<Void> voidMono = fireAndForget(socketClient, bytes);
 
-        if (isReactive(method.getReturnType())) {
-            return voidMono;
+        FrameType frameType = methodMetadata.getFrameType();
+
+        switch (frameType) {
+            case REQUEST_FNF:
+                return socketClient.fireAndForget(payload);
+            case REQUEST_RESPONSE:
+                return socketClient.requestAndResponse(payload);
+            default:
+                throw new IllegalArgumentException("not find support FrameType");
         }
-        return voidMono.block();
     }
 
-    private static Mono<Void> fireAndForget(RSocketClient socketClient, byte[] bytes) {
-        return socketClient.fireAndForget(null);
+    private static Mono<Void> fireAndForget(RSocketClient socketClient, TransportDescribe transportDescribe, byte[] bytes) {
+        return socketClient.fireAndForget(DefaultPayload.create(bytes));
     }
 
     private static boolean isReactive(Class<?> clazz) {
@@ -75,6 +84,6 @@ final class MethodProxy implements InvocationHandler {
     }
 
     private static String splicRoute(ServiceMetadata serviceMetadata, MethodMetadata methodMetadata) {
-        return StringUtils.join(serviceMetadata.serviceId(), methodMetadata.endpoint(), ".");
+        return StringUtils.join(serviceMetadata.getServiceId(), methodMetadata.route(), ".");
     }
 }

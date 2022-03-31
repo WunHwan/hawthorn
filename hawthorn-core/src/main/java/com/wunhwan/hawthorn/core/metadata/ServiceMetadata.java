@@ -1,13 +1,12 @@
 package com.wunhwan.hawthorn.core.metadata;
 
 import com.wunhwan.hawthorn.core.annotation.RSocketService;
+import io.netty.buffer.ByteBuf;
+import io.rsocket.metadata.CompositeMetadata;
 
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 
 /**
  * todo...
@@ -15,15 +14,28 @@ import java.util.Optional;
  * @author wunhwantseng@gmail.com
  * @since todo...
  */
-public class ServiceMetadata {
+public class ServiceMetadata implements CompositeMetadata.Entry {
 
     private final Class<?> service;
 
-    private final RSocketService rootMapping;
-
     private final Map<String, MethodMetadata> methodMetadataMap = new HashMap<>();
 
-    private TransferMetadata rootTransferMetadata;
+    private final String serviceId;
+
+    private final String version;
+
+    private final String group;
+
+    private final String endpoint;
+
+    private final String dataEncoding;
+
+    private final String acceptEncoding;
+
+    /**
+     * If Class of Service is Interface, that mean the proxy is requester, and method has {@link com.wunhwan.hawthorn.core.annotation.RSocketClient}
+     */
+    private final String hostname;
 
     public ServiceMetadata(Class<?> service) {
         this.service = service;
@@ -32,7 +44,13 @@ public class ServiceMetadata {
             throw new IllegalArgumentException("class [" + service.getCanonicalName() + "] miss @RSocketService");
         }
 
-        this.rootMapping = service.getAnnotation(RSocketService.class);
+        RSocketService rSocketService = service.getAnnotation(RSocketService.class);
+        this.serviceId = rSocketService.serviceId();
+        this.version = rSocketService.version();
+        this.group = rSocketService.group();
+        this.endpoint = rSocketService.endpoint();
+        this.dataEncoding = rSocketService.dataEncoding();
+        this.acceptEncoding = rSocketService.acceptEncoding();
 
         for (Method method : service.getDeclaredMethods()) {
             if (Modifier.isNative(method.getModifiers())) {
@@ -43,7 +61,7 @@ public class ServiceMetadata {
             }
 
             final MethodMetadata methodMetadata = new MethodMetadata(method);
-            String methodEndpoint = methodMetadata.endpoint();
+            String methodEndpoint = methodMetadata.route();
             if (methodEndpoint == null) {
                 methodEndpoint = methodMetadata.method().getName();
             }
@@ -51,33 +69,36 @@ public class ServiceMetadata {
         }
     }
 
-    public String serviceId() {
-        final String serviceId = rootMapping.serviceId();
-        if (serviceId != null) {
-            return serviceId;
+    public String getServiceId() {
+        if (this.serviceId != null) {
+            return this.serviceId;
         }
 
         return service.getCanonicalName();
     }
 
-    public String version() {
-        return rootMapping.version();
+    public String getVersion() {
+        return version;
     }
 
-    public String group() {
-        return rootMapping.group();
+    public String getGroup() {
+        return group;
     }
 
-    public String endpoint() {
-        return rootMapping.endpoint();
+    public String getEndpoint() {
+        return endpoint;
     }
 
-    public String dataEncoding() {
-        return rootMapping.dataEncoding();
+    public String getDataEncoding() {
+        return dataEncoding;
     }
 
-    public String acceptEncoding() {
-        return rootMapping.acceptEncoding();
+    public String getAcceptEncoding() {
+        return acceptEncoding;
+    }
+
+    public String getHostname() {
+        return hostname;
     }
 
     public List<MethodMetadata> getAllMethodMetadata() {
@@ -85,7 +106,29 @@ public class ServiceMetadata {
     }
 
     public Optional<MethodMetadata> getMethodMetadata(Method method) {
-        return Optional.ofNullable(methodMetadataMap.get(method));
+        if (Objects.isNull(method)) {
+            throw new NullPointerException("method can not be null");
+        }
+
+        String endpoint;
+        if (method.isAnnotationPresent(RSocketService.class)) {
+            endpoint = method.getAnnotation(RSocketService.class).endpoint();
+        } else {
+            endpoint = method.getName();
+        }
+
+        return Optional.ofNullable(methodMetadataMap.get(endpoint));
     }
 
+    @Override
+    public ByteBuf getContent() {
+        return null;
+    }
+
+    @Override
+    public String getMimeType() {
+        return null;
+    }
+
+    private static
 }

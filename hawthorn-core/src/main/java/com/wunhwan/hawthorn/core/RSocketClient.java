@@ -1,6 +1,7 @@
 package com.wunhwan.hawthorn.core;
 
 import io.rsocket.Payload;
+import org.reactivestreams.Publisher;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
@@ -14,12 +15,12 @@ public interface RSocketClient {
 
     Mono<Void> fireAndForget(Payload payload);
 
-    <T> Mono<T> requestAndResponse(byte[] bytes, Class<T> returnType);
+    Mono<Payload> requestAndResponse(Payload payload);
 
-    <T> Flux<T> requestAndChannel(byte[] bytes, Class<T> returnType);
+    Flux<Payload> requestAndChannel(Publisher<Payload> payloads);
 
-    default <T> Flux<T> requestAndSteam(byte[] bytes, Class<T> returnType) {
-        return requestAndChannel(bytes, returnType);
+    default <T> Flux<Payload> requestAndSteam(Publisher<Payload> payloads) {
+        return requestAndChannel(payloads);
     }
 
 }
