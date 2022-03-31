@@ -17,9 +17,13 @@ import java.util.Optional;
 public class MethodMetadata {
 
     private final Method method;
+
     private final String endpoint;
+
     private final int paramCount;
+
     private final FrameType frameType;
+
     private final Class<?> returnType;
 
     public MethodMetadata(Method method) {

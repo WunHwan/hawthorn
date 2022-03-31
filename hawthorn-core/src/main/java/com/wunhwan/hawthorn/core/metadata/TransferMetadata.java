@@ -9,7 +9,9 @@ package com.wunhwan.hawthorn.core.metadata;
 public class TransferMetadata {
 
     private String url;
+
     private String protocol;
+
     private String agreementType;
 
 }

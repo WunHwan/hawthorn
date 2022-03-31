@@ -8,7 +8,7 @@ import java.util.Map;
  * @author wunhwantseng@gmail.com
  * @since todo...
  */
-public class TargetDescribe {
+public class TransportDescribe {
 
     private String protocol;
 
@@ -16,7 +16,7 @@ public class TargetDescribe {
 
     private Map<String, String> parameters;
 
-    public TargetDescribe(String protocol, String route, Map<String, String> parameters) {
+    public TransportDescribe(String protocol, String route, Map<String, String> parameters) {
         this.protocol = protocol;
         this.route = route;
         this.parameters = parameters;

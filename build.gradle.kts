@@ -12,6 +12,7 @@ allprojects {
     extra.apply {
         set("Version.rsocket", "1.1.1")
         set("Version.eclipse-collections", "11.0.0")
+        set("Version.commons-lang3", "3.12.0")
     }
 
     extra.apply {
@@ -24,6 +25,10 @@ allprojects {
         set(
             "eclipse-collections-api",
             "org.eclipse.collections:eclipse-collections-api:${extra.get("Version.eclipse-collections")}"
+        )
+        set(
+            "commons-lang3",
+            "org.apache.commons:commons-lang3:${extra.get("Version.commons-lang3")}"
         )
 
         set("jupiter-api", "org.junit.jupiter:junit-jupiter-api")

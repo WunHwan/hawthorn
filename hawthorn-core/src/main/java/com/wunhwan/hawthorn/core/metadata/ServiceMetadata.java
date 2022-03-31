@@ -18,8 +18,11 @@ import java.util.Optional;
 public class ServiceMetadata {
 
     private final Class<?> service;
+
     private final RSocketService rootMapping;
+
     private final Map<String, MethodMetadata> methodMetadataMap = new HashMap<>();
+
     private TransferMetadata rootTransferMetadata;
 
     public ServiceMetadata(Class<?> service) {

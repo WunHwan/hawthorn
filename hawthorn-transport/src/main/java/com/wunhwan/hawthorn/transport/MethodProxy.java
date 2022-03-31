@@ -1,13 +1,11 @@
-package com.wunhwan.hawthorn.transport.rpc;
+package com.wunhwan.hawthorn.transport;
 
-import com.wunhwan.hawthorn.core.context.TargetContext;
+import com.wunhwan.hawthorn.core.RSocketClient;
 import com.wunhwan.hawthorn.core.metadata.MethodMetadata;
 import com.wunhwan.hawthorn.core.metadata.ServiceMetadata;
-import com.wunhwan.hawthorn.core.metadata.TargetMetadata;
 import com.wunhwan.hawthorn.core.protocol.ProtocolSerializable;
 import com.wunhwan.hawthorn.core.protocol.ProtocolSerializationFactory;
-import com.wunhwan.hawthorn.transport.TargetDescribe;
-import io.rsocket.core.RSocketClient;
+import org.apache.commons.lang3.StringUtils;
 import reactor.core.CorePublisher;
 import reactor.core.publisher.Mono;
 
@@ -23,12 +21,14 @@ import java.util.Optional;
  * @since todo...
  **/
 @SuppressWarnings({"all"})
-final class TargetProxy implements InvocationHandler {
+final class MethodProxy implements InvocationHandler {
 
     private final ServiceMetadata serviceMetadata;
+    private final RSocketClient socketClient;
 
-    public TargetProxy(ServiceMetadata serviceMetadata) {
+    public MethodProxy(ServiceMetadata serviceMetadata, RSocketClient socketClient) {
         this.serviceMetadata = serviceMetadata;
+        this.socketClient = socketClient;
     }
 
     @Override
@@ -46,17 +46,19 @@ final class TargetProxy implements InvocationHandler {
 
         // method metadata of proxy object
         final MethodMetadata methodMetadata = methodMetadataOpt.get();
+        // transport route endpoint
+        final String routeEndpoint = splicRoute(serviceMetadata, methodMetadata);
         // rsokcet transfer package
-        TargetDescribe targetDescribe = new TargetDescribe(methodMetadata.hget(), metadata.route(), Map.of());
+        TransportDescribe transportDescribe = new TransportDescribe(serviceMetadata.dataEncoding(), routeEndpoint, Map.of());
 
-        final Optional<ProtocolSerializable> serializableOptional = ProtocolSerializationFactory.lookup(targetMetadata.protocol());
+        final Optional<ProtocolSerializable> serializableOptional = ProtocolSerializationFactory.lookup(transportDescribe.getProtocol());
         if (serializableOptional.isEmpty()) {
-            throw new IllegalArgumentException("can not match protocol:{ " + targetMetadata.protocol() + " } type");
+            throw new IllegalArgumentException("can not match protocol:{ " + transportDescribe.getProtocol() + " } type");
         }
         final ProtocolSerializable protocolSerializable = serializableOptional.get();
-        final byte[] bytes = protocolSerializable.serialize(targetDescribe);
+        final byte[] bytes = protocolSerializable.serialize(transportDescribe);
 
-        final Mono<Void> voidMono = fireAndForget(targetContext.socketClient(), bytes);
+        final Mono<Void> voidMono = fireAndForget(socketClient, bytes);
 
         if (isReactive(method.getReturnType())) {
             return voidMono;
@@ -65,10 +67,14 @@ final class TargetProxy implements InvocationHandler {
     }
 
     private static Mono<Void> fireAndForget(RSocketClient socketClient, byte[] bytes) {
-        return socketClient.fireAndForget(null); // todo
+        return socketClient.fireAndForget(null);
     }
 
     private static boolean isReactive(Class<?> clazz) {
         return CorePublisher.class.isAssignableFrom(clazz);
+    }
+
+    private static String splicRoute(ServiceMetadata serviceMetadata, MethodMetadata methodMetadata) {
+        return StringUtils.join(serviceMetadata.serviceId(), methodMetadata.endpoint(), ".");
     }
 }
