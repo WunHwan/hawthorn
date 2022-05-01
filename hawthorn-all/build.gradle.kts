@@ -1,13 +1,7 @@
 dependencies {
     // module dep
     implementation(project(":hawthorn-core"))
-
-    // core
-    implementation("${rootProject.extra.get("rsocket-transport-netty")}")
-    implementation("${rootProject.extra.get("byte-buddy")}")
-
-    // util
-    implementation("${rootProject.extra.get("commons-lang3")}")
+    implementation(project(":hawthorn-transport"))
 
     // test
     testImplementation("${rootProject.extra.get("jupiter-engine")}")

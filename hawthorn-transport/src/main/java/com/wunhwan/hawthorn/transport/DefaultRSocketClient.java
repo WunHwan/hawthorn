@@ -22,7 +22,7 @@ final class DefaultRSocketClient implements RSocketClient {
 
     public DefaultRSocketClient(RSocketClientTransport transport) {
         this.connector = RSocketConnector.create()
-                // Enable Zero-Copy
+                // Enable zero-copy
                 .payloadDecoder(PayloadDecoder.ZERO_COPY)
                 .connect(transport);
     }
@@ -34,7 +34,7 @@ final class DefaultRSocketClient implements RSocketClient {
     }
 
     @Override
-    public Mono<Payload> requestAndResponse(Payload payload) {
+    public Mono<Payload> requestResponse(Payload payload) {
         return Mono.defer(() -> connector)
                 .flatMap(rSocket -> rSocket.requestResponse(payload));
     }

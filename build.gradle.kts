@@ -1,7 +1,7 @@
 description = "RPC Framework base on RSocket application protocol."
 
 plugins {
-    id("org.springframework.boot") version "2.6.2" apply false
+    id("org.springframework.boot") version "2.6.7" apply false
     id("io.spring.dependency-management") version "1.0.11.RELEASE" apply false
 }
 
@@ -13,6 +13,7 @@ allprojects {
         set("Version.rsocket", "1.1.1")
         set("Version.eclipse-collections", "11.0.0")
         set("Version.commons-lang3", "3.12.0")
+        set("Version.byte-buddy", "1.12.9")
     }
 
     extra.apply {
@@ -30,7 +31,12 @@ allprojects {
             "commons-lang3",
             "org.apache.commons:commons-lang3:${extra.get("Version.commons-lang3")}"
         )
+        set(
+            "byte-buddy",
+            "net.bytebuddy:byte-buddy:${extra.get("Version.byte-buddy")}"
+        )
 
+        /* test */
         set("jupiter-api", "org.junit.jupiter:junit-jupiter-api")
         set("jupiter-engine", "org.junit.jupiter:junit-jupiter-engine")
     }

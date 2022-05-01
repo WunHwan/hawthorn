@@ -15,7 +15,7 @@ public interface RSocketClient {
 
     Mono<Void> fireAndForget(Payload payload);
 
-    Mono<Payload> requestAndResponse(Payload payload);
+    Mono<Payload> requestResponse(Payload payload);
 
     Flux<Payload> requestAndChannel(Publisher<Payload> payloads);
 

@@ -35,7 +35,8 @@ public class ServiceMetadata implements CompositeMetadata.Entry {
     /**
      * If Class of Service is Interface, that mean the proxy is requester, and method has {@link com.wunhwan.hawthorn.core.annotation.RSocketClient}
      */
-    private final String hostname;
+    private final String hostname = ""; // todo
+    private final int port = -1; // todo
 
     public ServiceMetadata(Class<?> service) {
         this.service = service;
@@ -90,15 +91,19 @@ public class ServiceMetadata implements CompositeMetadata.Entry {
     }
 
     public String getDataEncoding() {
-        return dataEncoding;
+        return this.dataEncoding;
     }
 
     public String getAcceptEncoding() {
-        return acceptEncoding;
+        return this.acceptEncoding;
     }
 
     public String getHostname() {
-        return hostname;
+        return this.hostname;
+    }
+
+    public int getPort(){
+        return this.port;
     }
 
     public List<MethodMetadata> getAllMethodMetadata() {
@@ -130,5 +135,5 @@ public class ServiceMetadata implements CompositeMetadata.Entry {
         return null;
     }
 
-    private static
+
 }

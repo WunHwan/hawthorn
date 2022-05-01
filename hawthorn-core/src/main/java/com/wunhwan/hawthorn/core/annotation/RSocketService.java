@@ -15,7 +15,7 @@ public @interface RSocketService {
 
     String serviceId() default "";
 
-    String version() default "0";
+    String version() default "1.0";
 
     String group() default "";
 

@@ -9,12 +9,11 @@ import io.rsocket.Payload;
 import io.rsocket.frame.FrameType;
 import io.rsocket.util.DefaultPayload;
 import org.apache.commons.lang3.StringUtils;
-import reactor.core.CorePublisher;
-import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
+import java.nio.charset.StandardCharsets;
 import java.util.Map;
 import java.util.Optional;
 
@@ -58,41 +57,53 @@ final class RSocketRequesterProxy implements InvocationHandler {
         // rsokcet transfer package
         TransportDescriber transportDescriber = new TransportDescriber(serviceMetadata.getDataEncoding(), routeing, Map.of());
 
-        final Optional<ProtocolSerializable> serializableOptional = ProtocolSerializationFactory.lookup(transportDescriber.getProtocol());
+        Optional<ProtocolSerializable> serializableOptional = ProtocolSerializationFactory.lookup(transportDescriber.getProtocol());
         if (serializableOptional.isEmpty()) {
             throw new IllegalArgumentException("can not match protocol:{ " + transportDescriber.getProtocol() + " } type");
         }
         final ProtocolSerializable protocolSerializable = serializableOptional.get();
-        final byte[] bytes = protocolSerializable.serialize(transportDescriber);
-        Payload payload = DefaultPayload.create(bytes);
 
         // RSocket Transport FrameType
-        FrameType frameType = methodMetadata.getFrameType();
+        FrameType frameType = methodMetadata.frameType();
+        // remote procedure cell by rsocket client
+        final Mono<?> remoteProcedureCell = Mono.defer(() -> {
+            final byte[] bytes = protocolSerializable.serialize(transportDescriber);
 
+            return rsocketRemote(socketClient, frameType, DefaultPayload.create(bytes));
+        });
+
+        // response handler
+        // if return-type is void,return do nothing
+        if (FrameType.REQUEST_FNF.equals(frameType)) {
+            return remoteProcedureCell;
+        }
+        // orelse parser body by return-type
+        return remoteProcedureCell.flatMap(it -> {
+            final Payload payload = (Payload) it;
+            final String data = payload.getDataUtf8();
+
+            return Mono.fromCallable(() -> {
+                final Object deserialize = protocolSerializable.deserialize(data.getBytes(StandardCharsets.UTF_8), methodMetadata.returnType());
+
+                return deserialize;
+            });
+        });
+    }
+
+    private static String splicRoute(ServiceMetadata serviceMetadata, MethodMetadata methodMetadata) {
+        return StringUtils.join(serviceMetadata.getServiceId(), methodMetadata.route(), ".");
+    }
+
+    private static Mono<?> rsocketRemote(RSocketClient socketClient, FrameType frameType, Payload payload) {
         // Match FrameType
         switch (frameType) {
             case REQUEST_FNF:
                 return socketClient.fireAndForget(payload);
             case REQUEST_RESPONSE:
-                return socketClient.requestAndResponse(payload);
+                return socketClient.requestResponse(payload);
             default: {
-                if (Flux.class.isAssignableFrom(returnType)) {
-                    return Flux.error(new IllegalArgumentException("not find support FrameType"));
-                }
                 return Mono.error(new IllegalArgumentException("not find support FrameType"));
             }
         }
-    }
-
-    private static Mono<Void> fireAndForget(RSocketClient socketClient, TransportDescriber transportDescriber, byte[] bytes) {
-        return socketClient.fireAndForget(DefaultPayload.create(bytes));
-    }
-
-    private static boolean isReactive(Class<?> clazz) {
-        return CorePublisher.class.isAssignableFrom(clazz);
-    }
-
-    private static String splicRoute(ServiceMetadata serviceMetadata, MethodMetadata methodMetadata) {
-        return StringUtils.join(serviceMetadata.getServiceId(), methodMetadata.route(), ".");
     }
 }

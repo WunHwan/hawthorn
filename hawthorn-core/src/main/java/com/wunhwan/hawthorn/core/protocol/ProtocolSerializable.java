@@ -1,7 +1,5 @@
 package com.wunhwan.hawthorn.core.protocol;
 
-import java.util.function.Function;
-
 /**
  * todo...
  *
@@ -14,5 +12,6 @@ public interface ProtocolSerializable {
 
     byte[] serialize(Object obj);
 
+    <T> T deserialize(byte[] bytes, Class<T> type);
 
 }

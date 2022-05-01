@@ -6,6 +6,8 @@ import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 import java.lang.reflect.Method;
+import java.lang.reflect.ParameterizedType;
+import java.lang.reflect.Type;
 
 /**
  * todo...
@@ -28,7 +30,6 @@ public class MethodMetadata {
     public MethodMetadata(Method method) {
         this.method = method;
         this.paramCount = method.getParameterCount();
-        this.returnType = method.getReturnType();
 
         if (method.isAnnotationPresent(RSocketService.class)) {
             final RSocketService annotation = method.getAnnotation(RSocketService.class);
@@ -38,14 +39,23 @@ public class MethodMetadata {
             this.route = method.getName();
         }
 
-        if (Mono.class.equals(returnType)) {
-            this.frameType = FrameType.REQUEST_RESPONSE;
-        } else if (Flux.class.equals(returnType)) {
-            this.frameType = FrameType.REQUEST_CHANNEL;
-        } else if (Void.class.equals(returnType)) {
+
+        final ParameterizedType returnParameterizedType = (ParameterizedType) method.getGenericReturnType();
+        final Type[] actualTypeArguments = returnParameterizedType.getActualTypeArguments();
+        if (actualTypeArguments.length == 0) {
+            throw new IllegalArgumentException("method generic size must bigger to one");
+        }
+
+        // try to get real type from first index
+        this.returnType = (Class<?>) actualTypeArguments[0];
+        if (Void.class.equals(this.returnType)) {
             this.frameType = FrameType.REQUEST_FNF;
-        } else {
+        } else if (Mono.class.isAssignableFrom(this.returnType)) {
             this.frameType = FrameType.REQUEST_RESPONSE;
+        } else if (Flux.class.isAssignableFrom(this.returnType)) {
+            this.frameType = FrameType.REQUEST_CHANNEL;
+        } else {
+            throw new RuntimeException("can not match return-type");
         }
     }
 
@@ -61,7 +71,7 @@ public class MethodMetadata {
         return this.paramCount;
     }
 
-    public FrameType getFrameType() {
+    public FrameType frameType() {
         return frameType;
     }
 
