@@ -1,7 +1,12 @@
 dependencies {
-    implementation("org.springframework:spring-context")
-    implementation("io.rsocket:rsocket-core")
+    // core
+    implementation("${rootProject.extra.get("rsocket-core")}")
 
-    testImplementation("org.junit.jupiter:junit-jupiter-api")
-    testImplementation("org.junit.jupiter:junit-jupiter-engine")
+    // extension util
+    implementation("${rootProject.extra.get("eclipse-collections")}")
+    implementation("${rootProject.extra.get("eclipse-collections-api")}")
+
+    // test
+    testImplementation("${rootProject.extra.get("jupiter-engine")}")
+    testImplementation("${rootProject.extra.get("jupiter-api")}")
 }
