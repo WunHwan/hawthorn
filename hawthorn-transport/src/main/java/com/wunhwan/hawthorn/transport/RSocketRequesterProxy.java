@@ -10,6 +10,7 @@ import io.rsocket.frame.FrameType;
 import io.rsocket.util.DefaultPayload;
 import org.apache.commons.lang3.StringUtils;
 import reactor.core.CorePublisher;
+import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 import java.lang.reflect.InvocationHandler;
@@ -36,6 +37,9 @@ final class RSocketRequesterProxy implements InvocationHandler {
 
     @Override
     public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
+        // def
+        final Class<?> returnType = method.getReturnType();
+
         if (method.isDefault()) {
             return method.invoke(proxy, args);
         } else if (method.getDeclaringClass().equals(Object.class)) {
@@ -52,30 +56,35 @@ final class RSocketRequesterProxy implements InvocationHandler {
         // transport route endpoint
         final String routeing = splicRoute(serviceMetadata, methodMetadata);
         // rsokcet transfer package
-        TransportDescribe transportDescribe = new TransportDescribe(serviceMetadata.getDataEncoding(), routeing, Map.of());
+        TransportDescriber transportDescriber = new TransportDescriber(serviceMetadata.getDataEncoding(), routeing, Map.of());
 
-        final Optional<ProtocolSerializable> serializableOptional = ProtocolSerializationFactory.lookup(transportDescribe.getProtocol());
+        final Optional<ProtocolSerializable> serializableOptional = ProtocolSerializationFactory.lookup(transportDescriber.getProtocol());
         if (serializableOptional.isEmpty()) {
-            throw new IllegalArgumentException("can not match protocol:{ " + transportDescribe.getProtocol() + " } type");
+            throw new IllegalArgumentException("can not match protocol:{ " + transportDescriber.getProtocol() + " } type");
         }
         final ProtocolSerializable protocolSerializable = serializableOptional.get();
-        final byte[] bytes = protocolSerializable.serialize(transportDescribe);
+        final byte[] bytes = protocolSerializable.serialize(transportDescriber);
         Payload payload = DefaultPayload.create(bytes);
 
-
+        // RSocket Transport FrameType
         FrameType frameType = methodMetadata.getFrameType();
 
+        // Match FrameType
         switch (frameType) {
             case REQUEST_FNF:
                 return socketClient.fireAndForget(payload);
             case REQUEST_RESPONSE:
                 return socketClient.requestAndResponse(payload);
-            default:
-                throw new IllegalArgumentException("not find support FrameType");
+            default: {
+                if (Flux.class.isAssignableFrom(returnType)) {
+                    return Flux.error(new IllegalArgumentException("not find support FrameType"));
+                }
+                return Mono.error(new IllegalArgumentException("not find support FrameType"));
+            }
         }
     }
 
-    private static Mono<Void> fireAndForget(RSocketClient socketClient, TransportDescribe transportDescribe, byte[] bytes) {
+    private static Mono<Void> fireAndForget(RSocketClient socketClient, TransportDescriber transportDescriber, byte[] bytes) {
         return socketClient.fireAndForget(DefaultPayload.create(bytes));
     }
 
