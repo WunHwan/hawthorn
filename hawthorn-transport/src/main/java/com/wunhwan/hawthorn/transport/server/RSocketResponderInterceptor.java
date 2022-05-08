@@ -1,7 +1,7 @@
-package com.wunhwan.hawthorn.transport;
+package com.wunhwan.hawthorn.transport.server;
 
 import com.wunhwan.hawthorn.core.metadata.ServiceMetadata;
-import io.rsocket.SocketAcceptor;
+import io.rsocket.RSocket;
 import io.rsocket.core.RSocketServer;
 import net.bytebuddy.implementation.bind.annotation.*;
 
@@ -13,7 +13,7 @@ import java.lang.reflect.Method;
  * @author wunhwantseng@gmail.com
  * @since todo...
  */
-public class RSocketResponderInterceptor {
+public class RSocketResponderInterceptor implements RSocket {
 
     private final ServiceMetadata serviceMetadata;
 

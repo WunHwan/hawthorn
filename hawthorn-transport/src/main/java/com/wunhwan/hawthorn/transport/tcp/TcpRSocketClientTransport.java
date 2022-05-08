@@ -1,7 +1,7 @@
 package com.wunhwan.hawthorn.transport.tcp;
 
-import com.wunhwan.hawthorn.core.RSocketClientTransport;
 import io.rsocket.DuplexConnection;
+import io.rsocket.transport.ClientTransport;
 import io.rsocket.transport.netty.client.TcpClientTransport;
 import reactor.core.publisher.Mono;
 
@@ -11,7 +11,7 @@ import reactor.core.publisher.Mono;
  * @author wunhwantseng@gmail.com
  * @since todo...
  **/
-public class TcpRSocketClientTransport implements RSocketClientTransport {
+public class TcpRSocketClientTransport implements ClientTransport {
 
     private final TcpClientTransport transport;
 

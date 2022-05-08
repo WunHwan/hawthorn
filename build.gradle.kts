@@ -10,7 +10,7 @@ allprojects {
     version = "2022.01.26-SNAPSHOT"
 
     extra.apply {
-        set("Version.rsocket", "1.1.1")
+        set("Version.rsocket", "1.1.2")
         set("Version.eclipse-collections", "11.0.0")
         set("Version.commons-lang3", "3.12.0")
         set("Version.byte-buddy", "1.12.9")

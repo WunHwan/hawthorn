@@ -12,7 +12,7 @@ import java.util.ServiceLoader;
  * @author wunhwantseng@gmail.com
  * @since todo...
  */
-public final class ProtocolSerializationFactory {
+public final class FactoryProtocolSerialization {
 
     private static final MutableMap<String, ProtocolSerializable> FACTORIES = Maps.mutable.empty();
 

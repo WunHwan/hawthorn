@@ -1,11 +1,12 @@
-package com.wunhwan.hawthorn.transport;
+package com.wunhwan.hawthorn.transport.client;
 
-import com.wunhwan.hawthorn.core.RSocketClient;
 import com.wunhwan.hawthorn.core.metadata.MethodMetadata;
 import com.wunhwan.hawthorn.core.metadata.ServiceMetadata;
+import com.wunhwan.hawthorn.core.protocol.FactoryProtocolSerialization;
 import com.wunhwan.hawthorn.core.protocol.ProtocolSerializable;
-import com.wunhwan.hawthorn.core.protocol.ProtocolSerializationFactory;
+import com.wunhwan.hawthorn.transport.TransportDescriber;
 import io.rsocket.Payload;
+import io.rsocket.core.RSocketClient;
 import io.rsocket.frame.FrameType;
 import io.rsocket.util.DefaultPayload;
 import org.apache.commons.lang3.StringUtils;
@@ -27,11 +28,11 @@ import java.util.Optional;
 final class RSocketRequesterProxy implements InvocationHandler {
 
     private final ServiceMetadata serviceMetadata;
-    private final RSocketClient socketClient;
+    private final Mono<RSocketClient> rsocket;
 
-    public RSocketRequesterProxy(ServiceMetadata serviceMetadata, RSocketClient socketClient) {
+    public RSocketRequesterProxy(ServiceMetadata serviceMetadata, Mono<RSocketClient> rsocket) {
         this.serviceMetadata = serviceMetadata;
-        this.socketClient = socketClient;
+        this.rsocket = rsocket;
     }
 
     @Override
@@ -57,7 +58,7 @@ final class RSocketRequesterProxy implements InvocationHandler {
         // rsokcet transfer package
         TransportDescriber transportDescriber = new TransportDescriber(serviceMetadata.getDataEncoding(), routeing, Map.of());
 
-        Optional<ProtocolSerializable> serializableOptional = ProtocolSerializationFactory.lookup(transportDescriber.getProtocol());
+        Optional<ProtocolSerializable> serializableOptional = FactoryProtocolSerialization.lookup(transportDescriber.getProtocol());
         if (serializableOptional.isEmpty()) {
             throw new IllegalArgumentException("can not match protocol:{ " + transportDescriber.getProtocol() + " } type");
         }
@@ -69,7 +70,7 @@ final class RSocketRequesterProxy implements InvocationHandler {
         final Mono<?> remoteProcedureCell = Mono.defer(() -> {
             final byte[] bytes = protocolSerializable.serialize(transportDescriber);
 
-            return rsocketRemote(socketClient, frameType, DefaultPayload.create(bytes));
+            return rsocketRemote(rsocket, frameType, DefaultPayload.create(bytes));
         });
 
         // response handler
@@ -94,16 +95,20 @@ final class RSocketRequesterProxy implements InvocationHandler {
         return StringUtils.join(serviceMetadata.getServiceId(), methodMetadata.route(), ".");
     }
 
-    private static Mono<?> rsocketRemote(RSocketClient socketClient, FrameType frameType, Payload payload) {
+    private static Mono<?> rsocketRemote(Mono<RSocketClient> rsocket, FrameType frameType, Payload payload) {
+        final Mono<Payload> payloadMono = Mono.just(payload);
+
         // Match FrameType
-        switch (frameType) {
-            case REQUEST_FNF:
-                return socketClient.fireAndForget(payload);
-            case REQUEST_RESPONSE:
-                return socketClient.requestResponse(payload);
-            default: {
-                return Mono.error(new IllegalArgumentException("not find support FrameType"));
+        return Mono.defer(() -> {
+            switch (frameType) {
+                case REQUEST_FNF:
+                    return rsocket.flatMap(client -> client.fireAndForget(payloadMono));
+                case REQUEST_RESPONSE:
+                    return rsocket.flatMap(client -> client.requestResponse(payloadMono));
+                default: {
+                    return Mono.error(new IllegalArgumentException("not find support FrameType"));
+                }
             }
-        }
+        });
     }
 }
